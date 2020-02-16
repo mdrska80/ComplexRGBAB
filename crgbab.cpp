@@ -80,8 +80,9 @@ char* CRGBAB::getPixel(int x, int y)
 
 int CRGBAB::getPixelPos(int x, int y)
 {
-    std::cout << "Pixel pos for x:" << x << ", y:" <<y <<
-    " is: " << y*width + x * 5 << std::endl;
+    std::cout << "Pixel pos [" << x << ", " << y <<
+    "] - " << y*width + x * 5 << std::endl;
+
     return y*width + x * 5;
 }
 
@@ -90,11 +91,34 @@ void CRGBAB::add(CRGBAB* source, int x, int y)
     // method will join external source to this image
     // external image will remain unaffected
 
-    // join line by line...
+    // sirka zdroje se vejde do cile?
     int lineLength = source->width;
-    if (lineLength > width+x)
 
+    // paklize je cil mensi, tedy width - x, kde x je to posunuti
+    // tak musime pouzit sirku toho cile, tedy to misto co
+    // mame k dispozici
+    if (lineLength > width - x) lineLength = width - x;
 
+    // defacto to same s vyskou...
+    // nejdrive predpokladame ze vyska cile muze byt komplet
+    // nakopirovana do cile.
+    int rows = source->height;
+
+    // celokva sirka minus misto kam to chceme dat nam dava pocet
+    // radku kolik tam muzeme dat.
+    if (rows > height - y) rows = height - y;
+
+    // no a ted uz je to jednoduche kazdy s radek s definovanou
+    // delkou nakopirujeme na spravnou pozici do cile.
+
+    // pro kazy radek
+    for (int yy = y; yy < rows; yy++)
+    {
+        int pixelPosSource = source->getPixelPos(x, yy);
+        int pixelPosTarget = getPixelPos(x, y+yy);
+
+        memcpy(&data[pixelPosTarget], &source->data[pixelPosSource], lineLength*5);
+    }
 }
 
 void CRGBAB::invert(int x, int y, int width, int height)
